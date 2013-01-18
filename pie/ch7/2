@@ -1,0 +1,20 @@
+#include <stdio.h>
+
+int* binarySearch(int value, int *begin, int *end) {
+    int diff = end - begin; // number of elements
+    if ( diff <= 0 ) return;
+    int* half = begin + (diff / 2);
+    printf("half = %d [ %X ]\n", *half, half);
+    if ( *half == value ) return half;
+    else if ( value > *half ) return binarySearch(value, half, end);
+    else if ( value < *half ) return binarySearch(value, begin, half);
+    return 0;
+}
+
+int main(int argc, char* argv[]) {
+    int xxx[7] = {10, 20, 21, 25, 50, 52, 70};
+    int* location = binarySearch(21, &xxx[0], &xxx[7]);
+    printf("The item is on position: %d\n", location - &xxx[0]);
+    return 0;
+}
+
