@@ -162,7 +162,7 @@ on_new_connection (GDBusServer *server,
 main (int argc, char *argv[])
 {
     gint ret;
-    gboolean opt_server;
+    gboolean opt_server = FALSE;
     gchar *opt_address;
     GOptionContext *opt_context;
     gboolean opt_allow_anonymous;
