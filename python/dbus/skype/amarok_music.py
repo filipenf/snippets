@@ -3,9 +3,6 @@
 import dbus
 import dbus.mainloop.glib
 import gobject
-import glib
-import gio
-import os
 import os.path
 
 skypeInvoke = None
