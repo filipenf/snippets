@@ -1,0 +1,379 @@
+<!DOCTYPE html><html><head></head> 
+ <body>
+  <canvas id="surface" width="600" height="600"></canvas>
+  <table>
+   <tr>
+	<td>Letras/segundo</td>
+	<td><input id="cps" size="10"/></td>
+   </tr>
+   <tr>
+	<td>Palavras/minuto</td>
+	<td><input id="wpm" size="10"/></td>
+   </tr>
+  </table>
+  
+  <script>
+		 var nomes = [
+"Maria",
+"José",
+"Antônio ",
+"João ",
+"Francisco ",
+"Ana ",
+"Luiz ",
+"Paulo ",
+"Carlos ",
+"Manoel ",
+"Pedro ",
+"Fracisca ",
+"Marcos ",
+"Raimundo ",
+"Sebastião ",
+"Antônia ",
+"Marcelo ",
+"Jorge ",
+"Márcia ",
+"Geraldo ",
+"Adriana ",
+"Sandra ",
+"Luís ",
+"Fernando ",
+"Fábio ",
+"Roberto ",
+"Márcio ",
+"Edson ",
+"André ",
+"Sérgio ",
+"Josefa ",
+"Patrícia ",
+"Daniel ",
+"Rodrigo ",
+"Rafael ",
+"Joaquim ",
+"Vera ",
+"Ricardo ",
+"Eduardo ",
+"Terezinha ",
+"Sônia ",
+"Alexandre ",
+"Rita ",
+"Luciana ",
+"Claudio ",
+"Rosa ",
+"Benedito ",
+"Leandro ",
+"Raimunda ",
+"Mário "
+];
+
+String.prototype.trim = function () {
+	return this.replace(/^\s+|\s+$/g,"");
+}
+
+function removeAcento(palavra) {  
+ com_acento = "áàãâäéèêëíìîïóòõôöúùûüçÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÖÔÚÙÛÜÇ";  
+ sem_acento = "aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC";  
+ nova="";  
+ for(i=0;i<palavra.length;i++) {
+	if (com_acento.search(palavra.substr(i,1))>=0) {
+	 nova+=sem_acento.substr(com_acento.search(palavra.substr(i,1)),1);
+	}
+	else {
+	 nova+=palavra.substr(i,1);
+	}
+ }
+ return nova;
+}  
+
+var balloonImg = new Image();
+var bombImg = new Image();
+bombImg.src = "media/bomb.png";
+balloonImg.src = "media/balloons.png";
+
+var line = {
+  x: 300,
+  y: 400,
+  length: 50,
+  angle: 0
+};
+
+function isCollide(a,b) { // check collision
+ S = a.x - b.x;
+ D = a.y - b.y;
+ F = a.width() + b.width();
+ return (S * S + D * D <= F * F)
+}
+
+function generateRandomColor() {
+  return '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+ }
+
+ function jaExiste(palavra) {
+	for ( j = 0; j < Word.all.length; j++ ) {
+	 if ( Word.all[j].text.charAt(0) == palavra.charAt(0) ) return j;
+	}
+	return -1;
+ }
+
+function Word() {
+ this.text = removeAcento(nomes[Math.round(Math.random() * nomes.length)]).trim();
+ if ( jaExiste(this.text) >= 0 ) return;
+ this.x = Math.random() * 500; 
+ this.y = 0;
+ this.vy = 1;
+ this.vx = Math.random(); 
+ if ( this.vx > 0.5 ) this.vx = 1 - this.vx;
+ this.color = "#000"; 
+ this.w = 0;
+ this.h = 0;
+ Word.all.push(this);
+}
+
+function Ball(x, y, r) {
+ this.x = x;
+ this.y = y;
+ this.r = r;
+ this.vx = 0;
+ this.vy = 0;
+ this.color = generateRandomColor();
+ this.destination = 0;
+ this.killer = false;
+ Ball.all.push(this);
+}
+Word.all = [];
+Word.draw_all = function () {
+ var i = Word.all.length;
+ while ( i -- ) {
+	Word.all[i].draw();
+ }
+}
+Ball.all = [];
+Ball.draw_all = function() {
+  var i = Ball.all.length;
+  while (i--) {
+    Ball.all[i].draw();
+  }
+};
+Ball.prototype = {
+  draw: function() {
+   ctx.save();
+   ctx.fillStyle = "#fff";
+   ctx.beginPath();
+   ctx.drawImage(bombImg, this.x, this.y);
+   if ( this.destination != 0 ) {
+	if ( isCollide(this.destination, this) )
+	{
+	 if ( this.killer ) {
+	  this.destination.remove();
+	  this.remove();
+	  Ball.all.splice(Ball.all.indexOf(this), 1);
+	  this.destination = 0;
+	  } else {
+	  this.destination.x -= this.destination.vx * 3;
+	  this.destination.y -= this.destination.vy * 3;
+	  this.remove();
+	 }
+	} 
+   }
+   //ctx.closePath();
+   ctx.fill();
+   ctx.restore();
+  },
+  remove: function() {
+    Ball.all.splice(Ball.all.indexOf(this), 1);
+   },
+   width: function() {
+	return this.r;
+   },
+   height: function() {
+	return this.r;
+   }
+};
+
+Word.prototype = {
+  draw: function() {
+	 ctx.save();
+	 ctx.fillStyle = this.color; 
+	 ctx.font = "bold 12px sans-serif";
+	 ctx.drawImage(balloonImg, this.x, this.y);
+	 ctx.fillText(this.text, this.x, this.y+74);
+	 text_ctx = ctx.measureText(this.text);
+	 this.h = 74 + text_ctx.height;
+	 this.w = text_ctx.width;
+	 if ( this.w < 64 ) this.w = 64;
+	 ctx.restore();
+	},
+  remove: function() {
+	 Word.all.splice(Word.all.indexOf(this), 1);
+	},
+	height: function() {
+	 return this.h;
+	},
+	width: function() {
+	 return this.w;
+  }
+
+};
+
+var startTime = new Date().getTime();
+var canvas = document.getElementById("surface");
+var wordsPerMin = document.getElementById("wpm");
+var charsPerSec = document.getElementById("cps");
+var ctx = canvas.getContext('2d');
+var wait = -1;
+var current = 0;
+var failed = 0;
+var correct = 0;
+var killed = 0;
+var cps = 0; // charsPerSecond
+var wpm = 0; // wordsPerSecond
+
+line.x = canvas.width / 2;
+line.y = canvas.height;
+
+var bgImage = new Image();
+function drawPattern() {
+ ctx.fillStyle = ctx.createPattern(bgImage, "repeat");
+ ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+bgImage.src = "media/cloud-bg.jpg";
+bgImage.onload = drawPattern;
+
+function calcTypingRatios() {
+ //TODO: aqui da pra fazer o calculo de qtos ms foi a mais rapida
+ now = new Date().getTime();
+ wpm = (killed / (now - startTime)) * 60 * 1000;
+ cps = correct / (now - startTime) * 1000;
+ //diff = now - timeLastKill;
+ //timeLastKill = now;
+ wordsPerMin.value = wpm;
+ charsPerSec.value = cps;
+}
+
+function killFirstLetter() {
+ var b = new Ball(canvas.width / 2, canvas.height -1, 16);
+ b.destination = current;
+ var speed = 5;
+ //angle = current.x 
+ triangle_x = current.x + 32 - b.x;
+ triangle_y = current.y + 32 - b.y;
+ line.angle = Math.atan2(triangle_y, triangle_x);
+ b.vx = Math.cos(line.angle); 
+ b.vy = Math.sin(line.angle);
+ 
+ Ball.all.push(b);
+ if ( current.text.length > 1 ) {
+  current.text = current.text.substr(1);
+ } else {
+  // fazer uma explosao maneira
+  killed++;
+  b.killer = true;
+  current.text = "";
+  current = 0;
+ }
+}
+
+function doKeyPress(evt) {
+	var keyCode = ('which' in evt) ? evt.which : evt.keyCode;
+	var ok = false;
+ if ( current == 0 ) {
+	for ( i=0; i<Word.all.length; i++ ) {
+	 var w = Word.all[i];
+	 if (w.text.toLowerCase().charAt(0)==String.fromCharCode(keyCode)) {
+		current = w;
+		current.color = "#ff0d0d";
+		killFirstLetter();
+		ok = true;
+		correct++;
+		break;
+	 }
+	}
+	} else {
+	if ( current.text.toLowerCase().charAt(0)==String.fromCharCode(evt.charCode) ) {
+	 ok = true;
+	 correct++;
+	 killFirstLetter();
+	}
+ }
+ if ( ok == false ) {
+	failed++;
+ }
+ calcTypingRatios();
+}
+
+window.addEventListener('keypress',doKeyPress,true);
+
+setInterval(function() {
+
+  // Clear display
+  ctx.save();
+  ctx.fillStyle = "url(media/cloud-bg.jpg)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+
+  // Update angle - with geometry! =)
+  //line.angle += (Math.PI * 2) / 300;
+  var x = line.x + line.length * Math.cos(line.angle);
+  var y = line.y + line.length * Math.sin(line.angle);
+
+  // Update balls - with physics! =)
+
+  if (Word.all.length < 10 && wait-- < 0) {
+	 var word = new Word(wait);
+	 wait = Math.random() * 60;
+ }
+
+  var i = Word.all.length;
+  while(i--) {
+    var word = Word.all[i];
+    word.x += word.vx;
+    word.y += word.vy;
+    word.vy += .003; //Aceleração ( gravidade )
+    word.vx *= .999;
+    word.vy *= .99;
+	if (word.x + word.w > canvas.width) {
+	  word.vx = -Math.abs(word.vx);
+	 }
+	 if (word.x < 0) {
+	  word.vx = Math.abs(word.vx);
+	}
+	if (word.y >= canvas.height) {
+      word.vy = -Math.abs(word.vy);
+      word.vy *= .7;
+	  if (Math.abs(word.vy) < 1 && Math.abs(word.vx) < 1) {
+	   alert("Game over");
+	   word.remove();
+	   if (current==word) current=0;
+      }
+    }
+  }
+
+  i = Ball.all.length;
+  while ( i-- ) {
+   b = Ball.all[i];
+   b.x += (b.vx * 3.5);
+   b.y += (b.vy * 3.5);
+  }
+
+
+
+  // Draw line
+  ctx.save();
+  ctx.strokeStyle = "#000";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(line.x, line.y);
+  ctx.lineTo(x, y);
+  var percent = Math.round((correct / ( failed + correct )) * 100);
+  ctx.fillStyle = "#fff"; 
+  ctx.fillText(percent + "% - Estouros: "+killed, 10, 10);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw balls
+  Word.draw_all();
+  Ball.draw_all();
+
+}, 1000 / 77);
+
+</script></body></html>
