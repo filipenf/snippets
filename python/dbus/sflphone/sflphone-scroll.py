@@ -8,6 +8,25 @@ import subprocess
 
 scrollState = False
 callState = None
+bus = None
+callManager = None
+objectManager = None
+
+def isSFLRunning():
+    global objectManager
+    return objectManager.NameHasOwner("org.sflphone.SFLphone")
+
+def checkConnection():
+    global callManager
+    if ( not isSFLRunning() ):
+        print "checkConnection: not running"
+        callManager = None
+    else:
+        print "checkConnection: running"
+        callManager = bus.get_object('org.sflphone.SFLphone', '/org/sflphone/SFLphone/CallManager')
+        callManager.connect_to_signal("incomingCall", incomingCall)
+        callManager.connect_to_signal("callStateChanged", callStateChanged)
+    return True
 
 def switchScrollLock():
     global scrollState
@@ -29,12 +48,17 @@ def callStateChanged(callId, state):
     callState = state
 
 def main():
+    global objectManager
+    global bus
+
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     bus = dbus . SessionBus ( )
-    callManager = bus.get_object('org.sflphone.SFLphone', '/org/sflphone/SFLphone/CallManager')
+    objectManager = bus.get_object("org.freedesktop.DBus","/org/freedesktop/DBus/ObjectManager")
 
-    callManager.connect_to_signal("incomingCall", incomingCall)
-    callManager.connect_to_signal("callStateChanged", callStateChanged)
+    checkConnection()
+
+    gobject.timeout_add(5000, checkConnection)
+
     loop = gobject.MainLoop()
     loop.run()
 
