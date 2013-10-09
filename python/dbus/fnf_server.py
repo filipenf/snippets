@@ -9,9 +9,9 @@ from dbus . mainloop . glib import DBusGMainLoop
 
 class MyDBUSService ( dbus . service . Object ) :
      def __init__ ( self ) :
-         bus_name = dbus . service . BusName ( 'br.com.digitro.Test' , bus = dbus.SessionBus ( ) )
-         dbus.service.Object.__init__( self , bus_name , '/br/com/digitro/Test' )
-     @ dbus.service.method ( 'br.com.digitro.Test.hello' )
+         bus_name = dbus . service . BusName ( 'br.com.filipenf.Test' , bus = dbus.SessionBus ( ) )
+         dbus.service.Object.__init__( self , bus_name , '/br/com/filipenf/Test' )
+     @ dbus.service.method ( 'br.com.filipenf.Test.hello' )
      def hello ( self ) :
          return "Hello World!"
 
