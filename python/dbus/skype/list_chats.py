@@ -8,5 +8,6 @@ skypeService = bus.get_object('com.Skype.API', '/com/Skype')
 invoke = skypeService.get_dbus_method('Invoke', 'com.Skype.API')
 
 print invoke('NAME Filipe')
+print invoke('PROTOCOL 6')
 print invoke('SEARCH MISSEDMESSAGES')
 

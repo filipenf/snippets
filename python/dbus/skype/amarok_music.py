@@ -14,7 +14,7 @@ def trackChangeHandler(args):
         text = "%s: %s" % (artist, title)
     else:
         text = os.path.basename(args['location'])
-    skypeInvoke("SET PROFILE RICH_MOOD_TEXT " + text)
+    skypeInvoke("SET PROFILE RICH_MOOD_TEXT <SS type=\"music\">%s</SS> " % (text))
 
 def main():
     global skypeInvoke
