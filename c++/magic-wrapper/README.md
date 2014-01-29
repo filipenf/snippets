@@ -3,7 +3,7 @@ libmagic C++ Wrapper
 
 Simple C++ wrapper for libmagic that allows one to get the mime-type of a file
 
-Example
+Usage
 ====================
 You just need an instance of Magic class and a call to getFileType()
 ```c++
