@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+# Parses ansible hosts cache file and print a table with some important
+# information
+
+import json
+import os
+
+with open("%s/.ansible/tmp/ansible-ec2.cache" % os.environ["HOME"]) as f:
+    js = json.loads(f.read())
+
+hosts = js["_meta"]["hostvars"]
+
+for host_key in hosts:
+    host = hosts[host_key]
+    #tags = { k[8:]:v for k,v in host.iteritems() if k.startswith('ec2_tag_') }
+    print("%12s |%15s|%15s|%8s| %s " %
+          (host['ec2_id'], host['ec2_ip_address'],
+           host["ec2_private_ip_address"],
+           host['ec2_region'],
+           host.get('ec2_tag_Name', '')))
+    #print tags
