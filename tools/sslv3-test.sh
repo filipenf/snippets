@@ -8,6 +8,11 @@ for host in "$@"; do
     if [[ $? != 0 ]]; then 
         echo "UNKNOWN: $host timeout or connection error";
     else
-        echo | openssl s_client -connect $host_:$port_ -ssl3 2>&1 | grep -qo "sslv3 alert handshake failure" && echo "OK: $host Not vulnerable" || echo "FAIL:  $host vulnerable; sslv3 connection accepted"; 
+        cipher=`echo | openssl s_client -connect $host_:$port_ -ssl3 2>&1 | grep "Cipher.*:" | awk -F':' '{print $2}' | tr -d ' '`
+        if [ "${cipher}" == '0000' ] || [ "$cipher" == "(NONE)" ]; then
+            echo "OK: $host Not vulnerable" ;
+        else
+            echo "FAIL:  $host vulnerable; sslv3 connection accepted ( $cipher )";
+        fi
     fi
 done
